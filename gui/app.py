@@ -333,15 +333,8 @@ class TestCaseSheetGeneratorApp:
         )
         chk_summary.pack(anchor="w", pady=(0, 4))
 
-        # Checkbox Back link
-        self.var_back_link = tk.BooleanVar(value=True)
-        chk_back = ttk.Checkbutton(
-            inner,
-            text="Thêm liên kết quay lại trang Tổng quan ở dòng đầu mỗi sheet con",
-            variable=self.var_back_link,
-            style="TCheckbutton"
-        )
-        chk_back.pack(anchor="w", pady=(0, 4))
+        # Checkbox Back link mặc định tắt hoàn toàn theo yêu cầu người dùng
+        self.var_back_link = tk.BooleanVar(value=False)
 
         # Checkbox Giữ Styles
         self.var_styles = tk.BooleanVar(value=True)
@@ -747,7 +740,6 @@ class TestCaseSheetGeneratorApp:
         self.txt_single_preview.delete("1.0", tk.END)
 
         self.txt_single_preview.insert("end", f"=== MÔ PHỎNG NỘI DUNG SHEET CON: '{target_sheet_name}' ===\n\n", "bold")
-        self.txt_single_preview.insert("end", "⬅ Quay lại Trang Tổng quan (Overview)\n\n", "bold")
 
         # 1. Header 20 cột (Cyan #00B0F0)
         self.txt_single_preview.insert("end", "[DÒNG TIÊU ĐỀ 1 & 2 - MÀU XANH CYAN #00B0F0 (MERGED HEADERS)]\n", "header_cyan")

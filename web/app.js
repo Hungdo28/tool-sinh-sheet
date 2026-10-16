@@ -32,7 +32,6 @@ const groupColSelect = document.getElementById("group-col-select");
 const chkForwardFill = document.getElementById("chk-forward-fill");
 
 const chkOverview = document.getElementById("chk-overview");
-const chkBackLink = document.getElementById("chk-back-link");
 const outputFilenameInput = document.getElementById("output-filename");
 
 const groupsTableBody = document.getElementById("groups-table-body");
@@ -554,9 +553,6 @@ function renderSingleSheetMockup() {
     const headerRows = currentSheetData.slice(0, headerIdx + 1);
 
     let html = `
-        <div style="margin-bottom: 8px;">
-            <span style="color: #2563EB; font-weight: bold; text-decoration: underline; font-size: 11px;">⬅ Quay lại Trang Tổng quan (Overview)</span>
-        </div>
         <div class="mockup-header-cyan">
             [TIÊU ĐỀ 2 TẦNG XANH CYAN (#00B0F0) - 20 CỘT ĐẦY ĐỦ]
         </div>
@@ -748,12 +744,7 @@ async function executeSheetGeneration() {
 
             const sheetRows = [];
 
-            // Dòng link quay lại trang Tổng quan
-            if (includeOverview && addBackLink) {
-                sheetRows.push(["⬅ Quay lại Trang Tổng quan (Overview)"]);
-            }
-
-            // Dòng Header
+            // Dòng Header (Bắt đầu ngay từ dòng 1)
             headerRows.forEach(hRow => {
                 sheetRows.push([...hRow]);
             });
@@ -780,15 +771,14 @@ async function executeSheetGeneration() {
                 wsChild["!cols"] = colWidths;
             }
 
-            // Tái tạo các ô gộp (Merged Cells) cho phần Header template trên sheet con
+            // Tái tạo các ô gộp (Merged Cells) cho phần Header template trên sheet con (offset = 0)
             if (srcSheet && srcSheet["!merges"]) {
-                const offset = (includeOverview && addBackLink) ? 1 : 0;
                 const childMerges = [];
                 srcSheet["!merges"].forEach(m => {
                     if (m.e.r <= headerIdx) {
                         childMerges.push({
-                            s: { r: m.s.r + offset, c: m.s.c },
-                            e: { r: m.e.r + offset, c: m.e.c }
+                            s: { r: m.s.r, c: m.s.c },
+                            e: { r: m.e.r, c: m.e.c }
                         });
                     }
                 });

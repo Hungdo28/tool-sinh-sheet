@@ -511,18 +511,9 @@ def generate_excel_sheets(
                 if col_letter in src_ws.column_dimensions:
                     new_ws.column_dimensions[col_letter].width = src_ws.column_dimensions[col_letter].width
 
+            # Header template bắt đầu ngay từ dòng 1 (Khớp 100% template gốc, không chèn dòng quay lại)
             target_row = 1
-
-            # Nút/link quay lại trang Tổng quan
-            if include_summary_sheet and add_back_link:
-                back_cell = new_ws.cell(row=target_row, column=1, value="⬅ Quay lại Trang Tổng quan (Overview)")
-                back_cell.hyperlink = f"#'{summary_sheet_name}'!A1"
-                back_cell.font = Font(name="Segoe UI", size=10, bold=True, color="FF1D4ED8", underline="single")
-                back_cell.alignment = Alignment(vertical="center")
-                new_ws.row_dimensions[target_row].height = 24
-                target_row += 1
-
-            header_target_start = target_row
+            header_target_start = 1
             # Sao chép các dòng Header từ nguồn
             for r in range(1, header_row + 1):
                 if r in src_ws.row_dimensions and src_ws.row_dimensions[r].height:
@@ -712,6 +703,7 @@ def generate_excel_sheets(
                 if col_letter in src_ws.column_dimensions:
                     single_ws.column_dimensions[col_letter].width = src_ws.column_dimensions[col_letter].width
 
+            target_row = 1
             header_target_start = target_row
             # Header
             for r in range(1, header_row + 1):
