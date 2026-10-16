@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tool Sinh Sheet Test Case Tự Động - Excel & Google Sheets</title>
+    <meta name="description" content="Ứng dụng tự động bóc tách các test case chi tiết theo từng Module / Feature / Test Case cha thành từng Sheet riêng biệt trong Excel.">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- HEADER -->
+        <header class="app-header">
+            <div class="header-left">
+                <div class="logo-icon">📑</div>
+                <div class="header-title-box">
+                    <h1>TOOL SINH SHEET TEST CASE TỰ ĐỘNG</h1>
+                    <p class="subtitle">Bóc tách test case con theo Module / Feature / Test Case cha thành từng Sheet Excel độc lập</p>
+                </div>
+            </div>
+            <div class="header-right">
+                <button id="btn-load-sample" class="btn btn-secondary">⚡ Dùng Thử File Mẫu</button>
+            </div>
+        </header>
+
+        <!-- MAIN LAYOUT -->
+        <main class="main-content">
+            <!-- LEFT PANEL: CONFIG -->
+            <section class="panel panel-config">
+                <!-- BƯỚC 1 -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="step-badge">1</span>
+                        <h2>NHẬP FILE EXCEL HOẶC GOOGLE SHEETS</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Source Selector Tabs -->
+                        <div class="source-tabs">
+                            <button id="tab-file" class="tab-btn active" data-source="file">📁 File Excel từ máy</button>
+                            <button id="tab-gsheet" class="tab-btn" data-source="gsheet">🌐 Link Google Sheet</button>
+                        </div>
+
+                        <!-- Tab 1: File Upload / Drag & Drop -->
+                        <div id="source-file-pane" class="tab-pane active">
+                            <div id="drop-zone" class="drop-zone">
+                                <input type="file" id="file-input" accept=".xlsx, .xls, .csv" hidden>
+                                <div class="drop-zone-content">
+                                    <div class="upload-icon">📤</div>
+                                    <p class="drop-text">Kéo thả file Excel vào đây hoặc <span class="browse-link">Chọn file từ máy</span></p>
+                                    <p class="drop-hint">Hỗ trợ .xlsx, .xls (Tối đa 50MB)</p>
+                                </div>
+                            </div>
+                            <div id="file-info" class="file-info-badge hidden">
+                                <span class="file-name" id="file-name-display">sample.xlsx</span>
+                                <button id="btn-remove-file" class="btn-icon" title="Chọn file khác">✕</button>
+                            </div>
+                        </div>
+
+                        <!-- Tab 2: Google Sheets URL -->
+                        <div id="source-gsheet-pane" class="tab-pane hidden">
+                            <label for="gsheet-url" class="form-label">Dán đường dẫn Google Sheets (yêu cầu quyền xem):</label>
+                            <div class="input-with-button">
+                                <input type="text" id="gsheet-url" class="form-input" placeholder="https://docs.google.com/spreadsheets/d/.../edit">
+                                <button id="btn-fetch-gsheet" class="btn btn-primary">📥 Tải Sheet</button>
+                            </div>
+                            <p class="form-help">💡 Lưu ý: Sheet cần bật chế độ "Bất kỳ ai có liên kết đều có thể xem".</p>
+                        </div>
+
+                        <!-- Sheet & Header Row Picker -->
+                        <div class="form-row-2col mt-3">
+                            <div class="form-group">
+                                <label for="sheet-select" class="form-label">Chọn Sheet nguồn:</label>
+                                <select id="sheet-select" class="form-select" disabled>
+                                    <option value="">(Chưa chọn file)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="header-row" class="form-label">Dòng tiêu đề (Header):</label>
+                                <input type="number" id="header-row" class="form-input" value="1" min="1" max="20">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- BƯỚC 2 -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <span class="step-badge">2</span>
+                        <h2>CẤU HÌNH TÁCH SHEET TỪNG TEST CASE</h2>
+                    </div>
+                    <div class="card-body">
+                        <!-- Chọn quy tắc tách -->
+                        <div class="form-group">
+                            <label class="form-label">Chế độ sinh Sheet:</label>
+                            <div class="split-rule-container">
+                                <label class="rule-radio-card active" id="card-rule-each-case">
+                                    <input type="radio" name="split-rule" id="rule-each-case" value="each_case" checked>
+                                    <span class="rule-title">🎯 Tách từng Test Case (Mỗi case = 1 Sheet)</span>
+                                    <span class="rule-desc">Mỗi test case sinh 1 sheet độc lập, giữ nguyên 100% template và định dạng từ file tổng</span>
+                                </label>
+                                <label class="rule-radio-card mt-2" id="card-rule-by-group">
+                                    <input type="radio" name="split-rule" id="rule-by-group" value="by_group">
+                                    <span class="rule-title">📁 Gom theo Module / Phân nhóm</span>
+                                    <span class="rule-desc">Gom các testcase cùng nhóm vào chung 1 sheet theo Module/Feature</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group mt-3">
+                            <label for="group-col-select" id="lbl-col-select" class="form-label">Cột định danh Test Case (dùng làm Tên Sheet):</label>
+                            <select id="group-col-select" class="form-select" disabled>
+                                <option value="">(Chọn sheet trước để tải cột)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-check-group mt-2">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="chk-forward-fill" checked>
+                                <span class="checkmark"></span>
+                                <span class="checkbox-label">Tự động xử lý ô gộp (Merged Cells / Điền tiếp cho dòng con nếu có nhiều bước)</span>
+                            </label>
+                        </div>
+                        <p id="group-col-hint" class="form-help">💡 Tool sẽ sinh mỗi testcase thành 1 sheet mới riêng biệt với template giống hệt file tổng.</p>
+                    </div>
+                </div>
+
+                <!-- BƯỚC 3 -->
+                <div class="card mt-3">
+                    <div class="card-header">
+                        <span class="step-badge">3</span>
+                        <h2>TÙY CHỌN XUẤT SHEET</h2>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check-group">
+                            <label class="checkbox-container">
+                                <input type="checkbox" id="chk-overview" checked>
+                                <span class="checkmark"></span>
+                                <span class="checkbox-label">Tạo Sheet "Tổng quan" (Overview) kèm bảng điều hướng nhấp mở nhanh</span>
+                            </label>
+                            <label class="checkbox-container mt-2">
+                                <input type="checkbox" id="chk-back-link" checked>
+                                <span class="checkmark"></span>
+                                <span class="checkbox-label">Thêm liên kết quay lại trang Tổng quan ở dòng đầu mỗi sheet con</span>
+                            </label>
+                        </div>
+
+                        <div class="form-group mt-3">
+                            <label for="output-filename" class="form-label">Tên file Excel kết quả:</label>
+                            <input type="text" id="output-filename" class="form-input" value="TestCases_Tach_Sheet.xlsx">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- RIGHT PANEL: PREVIEW & RUN -->
+            <section class="panel panel-preview">
+                <div class="card preview-card">
+                    <div class="card-header between">
+                        <div class="flex-align">
+                            <span class="step-badge">4</span>
+                            <h2>KHÔNG GIAN DỮ LIỆU & XEM TRƯỚC SHEET</h2>
+                        </div>
+                        <div class="preview-actions">
+                            <span id="preview-summary-badge" class="badge">Chưa có dữ liệu</span>
+                        </div>
+                    </div>
+
+                    <!-- Navigation Tabs -->
+                    <div class="preview-tabs-nav">
+                        <button id="p-tab-data" class="p-tab-btn active">📊 Bảng Dữ Liệu Test Case Chi Tiết</button>
+                        <button id="p-tab-sheets" class="p-tab-btn">📑 Danh Sách Sheet Sẽ Tách (Mỗi Case = 1 Sheet)</button>
+                        <button id="p-tab-single" class="p-tab-btn">👁️ Xem Trước Mẫu Sheet Con</button>
+                    </div>
+
+                    <!-- PANE 1: Full Data Table Preview -->
+                    <div id="pane-tab-data" class="preview-tab-pane active">
+                        <div class="pane-toolbar">
+                            <span id="data-table-stats" class="pane-stats">Đang tải dữ liệu...</span>
+                            <div class="search-wrap">
+                                <input type="text" id="data-search-input" class="search-input" placeholder="🔍 Lọc test case...">
+                            </div>
+                        </div>
+                        <div class="table-container full-grid-container">
+                            <table id="full-data-table" class="data-table full-table">
+                                <thead id="full-table-head">
+                                    <tr><th>Đang nạp cột...</th></tr>
+                                </thead>
+                                <tbody id="full-table-body">
+                                    <tr><td class="empty-state">Vui lòng nạp file để xem bảng tính</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- PANE 2: Groups / Sheets Split Checklist -->
+                    <div id="pane-tab-sheets" class="preview-tab-pane hidden">
+                        <div class="pane-toolbar">
+                            <span class="pane-hint">Chọn hoặc bỏ chọn các Sheet bạn muốn sinh ra:</span>
+                            <div class="btn-group-sm">
+                                <button id="btn-select-all" class="btn-sm btn-ghost">✓ Tất cả</button>
+                                <button id="btn-deselect-all" class="btn-sm btn-ghost">✗ Bỏ chọn</button>
+                            </div>
+                        </div>
+                        <div class="table-container">
+                            <table id="groups-table" class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 50px; text-align: center;">Chọn</th>
+                                        <th style="width: 50px; text-align: center;">STT</th>
+                                        <th>Mã Test Case / Nhóm Gốc</th>
+                                        <th>Tên Sheet Sẽ Tạo</th>
+                                        <th style="width: 90px; text-align: center;">Số TC Con</th>
+                                        <th style="width: 100px; text-align: center;">Trạng Thái</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="groups-table-body">
+                                    <tr>
+                                        <td colspan="6" class="empty-state">
+                                            <div class="empty-box">
+                                                <div class="empty-icon">📊</div>
+                                                <p>Vui lòng chọn file Excel hoặc dán link Google Sheet để bắt đầu quét nhóm</p>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- PANE 3: Single Sheet Preview Mockup -->
+                    <div id="pane-tab-single" class="preview-tab-pane hidden">
+                        <div class="pane-toolbar">
+                            <label for="select-mock-tc" class="form-label mb-0 mr-2">Chọn Test Case xem thử mẫu:</label>
+                            <select id="select-mock-tc" class="form-select select-inline"></select>
+                        </div>
+                        <div class="single-sheet-mockup-wrap">
+                            <div class="mockup-tab-header">
+                                <span id="mockup-tab-title" class="mockup-tab-badge">📄 Sheet: _Tên_TC__1</span>
+                            </div>
+                            <div class="mockup-sheet-content" id="mockup-sheet-content">
+                                <!-- Rendered dynamically -->
+                            </div>
+                            <div class="mockup-footer-note">
+                                ✅ Mỗi Test Case sẽ sinh ra 1 Sheet độc lập giữ nguyên Header xanh Cyan (#00B0F0), Banner vàng (#FFE699) và các ô gộp.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Execution Action Footer -->
+                    <div class="preview-footer">
+                        <div class="progress-box hidden" id="progress-box">
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" id="progress-fill" style="width: 0%;"></div>
+                            </div>
+                            <span class="progress-text" id="progress-text">Đang chuẩn bị...</span>
+                        </div>
+
+                        <button id="btn-generate" class="btn btn-success btn-lg" disabled>
+                            🚀 BẮT ĐẦU SINH SHEET & TẢI FILE EXCEL
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- SUCCESS MODAL -->
+        <div id="success-modal" class="modal hidden">
+            <div class="modal-backdrop"></div>
+            <div class="modal-dialog">
+                <div class="modal-header">
+                    <div class="success-icon">🎉</div>
+                    <h3>SINH SHEET THÀNH CÔNG!</h3>
+                </div>
+                <div class="modal-body">
+                    <p id="modal-success-msg">Đã bóc tách thành công các test case con vào từng sheet chi tiết.</p>
+                    <div class="stats-box" id="modal-stats-box">
+                        <div class="stat-item">
+                            <span class="stat-num" id="stat-sheets-count">0</span>
+                            <span class="stat-lbl">Sheet Đã Tạo</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-num" id="stat-tc-count">0</span>
+                            <span class="stat-lbl">Test Case Con</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button id="btn-download-again" class="btn btn-primary">💾 Tải Lại File</button>
+                    <button id="btn-close-modal" class="btn btn-secondary">Đóng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="libs/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
